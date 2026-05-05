@@ -184,7 +184,7 @@ export default function HomePage() {
   const mainLocation = event.locations?.[0];
 
   const strapiBaseUrl = import.meta.env.VITE_STRAPI_API_URL;
-  
+
   const backgroundImageUrl = `${strapiBaseUrl}${event.background_image?.formats?.large?.url}`;
   const musicUrl = `${strapiBaseUrl}${event.music?.url}`;
   const galleryImageUrl = `${strapiBaseUrl}${event.gallery_image?.formats?.large?.url}`;
@@ -351,9 +351,11 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="inset-0 flex bg-black/30 justify-center">
-        <img src={galleryImageUrl} className="" />
-      </div>
+      {event.gallery_image && (
+        <div className="inset-0 flex bg-black/30 justify-center">
+          <img src={galleryImageUrl} className="" />
+        </div>
+      )}
 
       <div className="bg-white/60 backdrop-blur-sm p-12 max-w-xl mx-auto border-t">
         <h2 className="text-3xl font-serif text-center text-accent mb-8 items-center">
@@ -511,10 +513,12 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="text-center mt-16 text-gray-500 font-light mb-6">
-        <p>Con todo nuestro amor,</p>
-        <p className="mt-2">{event.event_host_names}</p>
-      </div>
+      {event.event_host_names && (
+        <div className="text-center mt-16 text-gray-500 font-light mb-6">
+          <p>Con todo nuestro amor,</p>
+          <p className="mt-2">{event.event_host_names}</p>
+        </div>
+      )}
       <Toaster />
     </>
   );
