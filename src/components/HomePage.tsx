@@ -5,17 +5,14 @@ import {
   Copy,
   Gift,
   MapPin,
-  Wine,
   Shirt,
+  Wine,
 } from "lucide-react";
-import bgImage from "../assets/background.jpg";
-import img1 from "../assets/img_2.jpg";
-import music from "../assets/music.mp3";
-import CountdownToDate from "./counter";
-import toast, { Toaster } from "react-hot-toast";
 import { useEffect, useState } from "react";
-import { Event } from "../lib/types";
+import toast, { Toaster } from "react-hot-toast";
 import { eventService } from "../lib/services";
+import { Event } from "../lib/types";
+import CountdownToDate from "./counter";
 
 export default function HomePage() {
   const documentId = import.meta.env.VITE_EVENT_ID;
@@ -121,7 +118,7 @@ export default function HomePage() {
       "END:DAYLIGHT",
       "END:VTIMEZONE",
       "BEGIN:VEVENT",
-      `UID:boda-${dateStr}@brendayarturo.com`,
+      `UID:event-${dateStr}-${event?.documentId}`,
       `DTSTAMP:${dtstamp}`,
       `DTSTART;TZID=America/Mexico_City:${dtstart}`,
       `DTEND;TZID=America/Mexico_City:${dtend}`,
@@ -147,12 +144,12 @@ export default function HomePage() {
       const blob = new Blob([icsContent], {
         type: "text/calendar;charset=utf-8",
       });
-      const file = new File([blob], "boda-brenda-arturo.ics", {
+      const file = new File([blob], `${event?.main_title || "event"}.ics`, {
         type: "text/calendar",
       });
       navigator
         .share({
-          title: "Boda Brenda & Arturo",
+          title: event?.main_title || "Event",
           text: "Agrega la boda a tu calendario",
           files: [file],
         })
@@ -169,7 +166,7 @@ export default function HomePage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "boda-brenda-arturo.ics";
+    link.download = `${event?.main_title || "event"}.ics`;
     link.style.display = "none";
     document.body.appendChild(link);
     link.click();
@@ -186,12 +183,18 @@ export default function HomePage() {
 
   const mainLocation = event.locations?.[0];
 
+  const strapiBaseUrl = import.meta.env.VITE_STRAPI_API_URL;
+  
+  const backgroundImageUrl = `${strapiBaseUrl}${event.background_image?.formats?.large?.url}`;
+  const musicUrl = `${strapiBaseUrl}${event.music?.url}`;
+  const galleryImageUrl = `${strapiBaseUrl}${event.gallery_image?.formats?.large?.url}`;
+
   return (
     <>
       <div
         className="min-h-screen bg-cover bg-center bg-no-repeat flex items-center"
         style={{
-          backgroundImage: `url(${bgImage})`,
+          backgroundImage: `url(${backgroundImageUrl})`,
           height: "100hv",
         }}
       >
@@ -273,12 +276,14 @@ export default function HomePage() {
       </div>
 
       <div className="bg-white/60 backdrop-blur-sm p-12 max-w-xl mx-auto">
-        <div className=" flex justify-center">
-          <audio controls className="mb-6" autoPlay={false}>
-            <source src={music} type="audio/mp3" />
-            Your browser does not support the audio element.
-          </audio>
-        </div>
+        {event.music && (
+          <div className=" flex justify-center">
+            <audio controls className="mb-6" autoPlay={false}>
+              <source src={musicUrl} type="audio/mp3" />
+              Your browser does not support the audio element.
+            </audio>
+          </div>
+        )}
 
         <p className=" text-center my-12">
           {event.message ||
@@ -347,7 +352,7 @@ export default function HomePage() {
       </div>
 
       <div className="inset-0 flex bg-black/30 justify-center">
-        <img src={img1} className="" />
+        <img src={galleryImageUrl} className="" />
       </div>
 
       <div className="bg-white/60 backdrop-blur-sm p-12 max-w-xl mx-auto border-t">
@@ -361,25 +366,31 @@ export default function HomePage() {
         </p>
 
         {/* Liverpool */}
-        <div className="mt-10 text-center">
-          <p className="text-gray-800 font-semibold mb-2">
-            Mesa de Regalos Liverpool
-          </p>
-          <a
-            href="https://mesaderegalos.liverpool.com.mx/milistaderegalos/51991633"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-accent underline break-all"
-          >
-            Ver mesa de regalos
-          </a>
-          <p className="text-sm text-gray-600 mt-2">
-            Número de evento: <span className="font-bold">51991633</span>{" "}
-            <button className="link" onClick={() => copy("51991633")}>
-              <Copy className="inline" />
-            </button>
-          </p>
-        </div>
+        {event.gift_registry?.map((registry) => (
+          <div key={registry.id} className="mt-10 text-center">
+            <p className="text-gray-800 font-semibold mb-2">{registry.name}</p>
+            <a
+              href={registry.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent underline break-all"
+            >
+              Ver mesa de regalos
+            </a>
+            {registry.reference_number && (
+              <p className="text-sm text-gray-600 mt-2">
+                Número de referencia:{" "}
+                <span className="font-bold">{registry.reference_number}</span>{" "}
+                <button
+                  className="link"
+                  onClick={() => copy(registry.reference_number!)}
+                >
+                  <Copy className="inline" />
+                </button>
+              </p>
+            )}
+          </div>
+        ))}
 
         {/* Transferencia como opción alternativa */}
         <div className="mt-10">
@@ -390,24 +401,38 @@ export default function HomePage() {
             inolvidable. ✈️🌍💛
           </p>
 
-          <div className="flex gap-1 justify-center mb-6">
-            <p className="text-gray-600 font-bold">
-              Cuenta BBVA: 4152314515600891
-            </p>
-            <button className="link" onClick={() => copy("4152314515600891")}>
-              <Copy className="inline" />
-            </button>
-          </div>
+          {(event.bank_name || event.bank_account) && (
+            <div className="flex gap-1 justify-center mb-6">
+              {event.bank_account && (
+                <p className="text-gray-600 font-bold">
+                  Cuenta: {event.bank_account}
+                </p>
+              )}
+              {event.bank_name && (
+                <p className="text-gray-600 font-bold">
+                  Banco: {event.bank_name}
+                </p>
+              )}
+              <button
+                className="link"
+                onClick={() => copy(event.bank_account!)}
+              >
+                <Copy className="inline" />
+              </button>
+            </div>
+          )}
 
-          <div className="flex gap-1 justify-center">
-            <p className="text-gray-600 font-bold">CLABE: 012680015837878934</p>
-            <button
-              className="link inline flex"
-              onClick={() => copy("012680015837878934")}
-            >
-              <Copy className="inline" />
-            </button>
-          </div>
+          {event.clabe && (
+            <div className="flex gap-1 justify-center">
+              <p className="text-gray-600 font-bold">CLABE: {event.clabe}</p>
+              <button
+                className="link inline flex"
+                onClick={() => copy(event.clabe!)}
+              >
+                <Copy className="inline" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -488,7 +513,7 @@ export default function HomePage() {
 
       <div className="text-center mt-16 text-gray-500 font-light mb-6">
         <p>Con todo nuestro amor,</p>
-        <p className="mt-2">Brenda & Arturo</p>
+        <p className="mt-2">{event.event_host_names}</p>
       </div>
       <Toaster />
     </>

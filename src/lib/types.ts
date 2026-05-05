@@ -2,12 +2,54 @@
 // Las respuestas son planas (sin wrapper "attributes") y usan documentId como
 // identificador estable para mutaciones y relaciones.
 
+
+
 export interface StrapiBase {
   id: number;
   documentId: string;
   createdAt: string;
   updatedAt: string;
   publishedAt?: string;
+}
+
+// ─── Media (extendido para imágenes de Strapi) ───────────────────────────────
+
+export interface StrapiImageFormat {
+  ext: string;
+  url: string;
+  hash: string;
+  mime: string;
+  name: string;
+  path?: string | null;
+  size: number;
+  width: number;
+  height: number;
+  sizeInBytes: number;
+}
+
+export interface StrapiImageFormats {
+  thumbnail?: StrapiImageFormat;
+  small?: StrapiImageFormat;
+  medium?: StrapiImageFormat;
+  large?: StrapiImageFormat;
+}
+
+export interface StrapiImage extends StrapiBase {
+  name: string;
+  alternativeText?: string | null;
+  caption?: string | null;
+  focalPoint?: unknown | null;
+  width: number;
+  height: number;
+  formats?: StrapiImageFormats;
+  hash: string;
+  ext: string;
+  mime: string;
+  size: number;
+  url: string;
+  previewUrl?: string | null;
+  provider: string;
+  provider_metadata?: unknown | null;
 }
 
 // ─── Media ───────────────────────────────────────────────────────────────────
@@ -58,8 +100,8 @@ export interface Event extends StrapiBase {
   subtitle?: string | null;
   event_date: string;
   confirmation_deadline?: string | null;
-  background_image?: StrapiMedia | null;
-  gallery_image?: StrapiMedia | null;
+  background_image?: StrapiImage | null;
+  gallery_image?: StrapiImage | null;
   music?: StrapiMedia | null;
   message?: string | null;
   dress_code?: string | null;
@@ -73,6 +115,8 @@ export interface Event extends StrapiBase {
   locations?: Location[];
   is_manageable?: boolean;
   whatsapp_message?: string | null;
+  bank_name?: string | null;
+  event_host_names?: string | null;
 }
 
 // ─── Companion ───────────────────────────────────────────────────────────────
