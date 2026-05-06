@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import HomePage from "./components/HomePage";
 import InvitationPage from "./components/InvitationPage";
-import LandingPage from "./components/LandingPage";
 
 function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
@@ -14,10 +13,6 @@ function App() {
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
-
-  if (currentPath === "/landing") {
-    return <LandingPage />;
-  }
 
   const invitacionMatch = currentPath.match(/^\/invitacion\/(.+)$/);
 
