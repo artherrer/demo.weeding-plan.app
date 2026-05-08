@@ -79,7 +79,7 @@ export default function InvitationPage({ codigo }: InvitationPageProps) {
             ? "no"
             : "pending";
 
-      await guestService.update(invitado.documentId, {
+      await guestService.confirm(codigo, {
         status: statusValue,
         confirmed_passes: confirmarAsistencia === true ? pasesSeleccionados : 0,
         ...(confirmarAsistencia !== true ? { table: null } : {}),
@@ -99,7 +99,7 @@ export default function InvitationPage({ codigo }: InvitationPageProps) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-amber-50 flex items-center justify-center">
         <div className="text-center">
-          <Loader className="w-12 h-12 text-lime-800 animate-spin mx-auto" />
+          <Loader className="w-12 h-12 text-accent animate-spin mx-auto" />
           <p className="mt-4 text-gray-600">Cargando invitación...</p>
         </div>
       </div>

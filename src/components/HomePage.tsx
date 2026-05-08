@@ -11,6 +11,7 @@ import {
 import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { eventService } from "../lib/services";
+import { primaryColor } from "../lib/theme";
 import { Event } from "../lib/types";
 import CountdownToDate from "./counter";
 
@@ -30,7 +31,7 @@ export default function HomePage() {
         toast.error("Error al cargar la información del evento", {
           className: "bg-background text-white px-4 py-2 rounded-lg",
           iconTheme: {
-            primary: "#C27341",
+            primary: primaryColor,
             secondary: "#fff",
           },
         });
@@ -43,7 +44,7 @@ export default function HomePage() {
       toast.success("¡Texto copiado!", {
         className: "bg-background text-white px-4 py-2 rounded-lg",
         iconTheme: {
-          primary: "#C27341",
+          primary: primaryColor,
           secondary: "#fff",
         },
       });
