@@ -3,7 +3,7 @@ import colors from 'tailwindcss/colors'
 // 🎨 Cambia solo esta línea para cambiar toda la paleta del proyecto.
 // Opciones: colors.rose | colors.pink | colors.violet | colors.sky |
 //           colors.emerald | colors.amber | colors.teal | colors.indigo
-const brand = colors.green
+const brand = colors.amber
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -11,7 +11,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary:          brand[600],
+        primary:          brand[700],
         secondary:        brand[800],
         accent:           brand[700],
         background:       brand[500],
