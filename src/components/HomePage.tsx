@@ -184,11 +184,9 @@ export default function HomePage() {
 
   const mainLocation = event.locations?.[0];
 
-  const strapiBaseUrl = import.meta.env.VITE_STRAPI_API_URL;
-
-  const backgroundImageUrl = `${strapiBaseUrl}${event.background_image?.formats?.large?.url}`;
-  const musicUrl = `${strapiBaseUrl}${event.music?.url}`;
-  const galleryImageUrl = `${strapiBaseUrl}${event.gallery_image?.formats?.large?.url}`;
+  const backgroundImageUrl = `${event.background_image?.formats?.large?.url}`;
+  const musicUrl = `${event.music?.url}`;
+  const galleryImageUrl = `${event.gallery_image?.formats?.large?.url}`;
 
   return (
     <>
