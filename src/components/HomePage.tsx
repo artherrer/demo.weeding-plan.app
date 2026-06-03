@@ -187,7 +187,7 @@ export default function HomePage() {
 
   const mainLocation = event.locations?.[0];
 
-  const backgroundImageUrl = `${event.background_image?.formats?.large?.url}`;
+  const backgroundImageUrl = event.background_image?.formats?.large?.url;
   const musicUrl = `${event.music?.url}`;
   const galleryImageUrl = `${event.gallery_image?.formats?.large?.url}`;
 
@@ -196,7 +196,14 @@ export default function HomePage() {
       <div
         className="min-h-screen bg-cover bg-center bg-no-repeat flex items-center"
         style={{
-          backgroundImage: `url(${backgroundImageUrl})`,
+          backgroundImage: backgroundImageUrl
+            ? `url(${backgroundImageUrl})`
+            : `
+              radial-gradient(ellipse at 20% 30%, rgba(199,98,61,0.15) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 70%, rgba(144,64,41,0.12) 0%, transparent 55%),
+              radial-gradient(ellipse at 60% 10%, rgba(135,66,33,0.08) 0%, transparent 50%),
+              linear-gradient(160deg, #1a1208 0%, #2c1a0e 40%, #1e120a 100%)
+            `,
           height: "100hv",
         }}
       >
@@ -354,9 +361,13 @@ export default function HomePage() {
       </div>
 
       {event.gallery_image && (
-        <div className="inset-0 flex bg-black/30 justify-center">
-          <img src={galleryImageUrl} className="" />
-        </div>
+        <div
+          className="w-full bg-center bg-cover"
+          style={{
+            backgroundImage: `url(${galleryImageUrl})`,
+            height: "clamp(300px, 50vw, 600px)",
+          }}
+        />
       )}
 
       <div className="bg-white/60 backdrop-blur-sm p-12 max-w-xl mx-auto border-t">
