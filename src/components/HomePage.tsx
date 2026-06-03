@@ -7,18 +7,21 @@ import {
   MapPin,
   Shirt,
   Wine,
+  X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { eventService } from "../lib/services";
 import { primaryColor } from "../lib/theme";
-import { Event } from "../lib/types";
+import { Event, GiftRegistry } from "../lib/types";
 import CountdownToDate from "./counter";
 
 export default function HomePage() {
   const documentId = import.meta.env.VITE_EVENT_ID;
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeModal, setActiveModal] = useState<"registry" | "bank" | null>(null);
+  const [selectedRegistry, setSelectedRegistry] = useState<GiftRegistry | null>(null);
 
   useEffect(() => {
     eventService
@@ -361,81 +364,148 @@ export default function HomePage() {
           <Gift className="inline text-lg" /> Regalo
         </h2>
 
-        <p className="text-gray-600 text-center">
+        <p className="text-gray-600 text-center mb-8">
           {event.gift_message ||
             "Tu presencia es el mejor regalo que podríamos pedir."}
         </p>
 
-        {/* Liverpool */}
-        {event.gift_registry?.map((registry) => (
-          <div key={registry.id} className="mt-10 text-center">
-            <p className="text-gray-800 font-semibold mb-2">{registry.name}</p>
-            <a
-              href={registry.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-accent underline break-all"
+        <div className="flex flex-wrap justify-center gap-4">
+          {event.gift_registry?.map((registry) => (
+            <button
+              key={registry.id}
+              onClick={() => {
+                setSelectedRegistry(registry);
+                setActiveModal("registry");
+              }}
+              className="py-4 px-8 bg-primary text-sm text-white rounded-lg font-light tracking-wider uppercase shadow-lg hover:shadow-xl transition-all"
             >
-              Ver mesa de regalos
-            </a>
-            {registry.reference_number && (
-              <p className="text-sm text-gray-600 mt-2">
-                Número de referencia:{" "}
-                <span className="font-bold">{registry.reference_number}</span>{" "}
-                <button
-                  className="link"
-                  onClick={() => copy(registry.reference_number!)}
-                >
-                  <Copy className="inline" />
-                </button>
-              </p>
-            )}
-          </div>
-        ))}
+              {registry.name}
+            </button>
+          ))}
 
-        {/* Transferencia como opción alternativa */}
-        <div className="mt-10">
-          <p className="text-gray-600 text-center mb-4">
-            O si lo prefieres, nos haría muchísima ilusión que nos ayudes a
-            hacer realidad nuestro viaje de bodas. Prometemos pensar en ti
-            mientras disfrutamos cada aventura, cada paisaje y cada recuerdo
-            inolvidable. ✈️🌍💛
-          </p>
-
-          {(event.bank_name || event.bank_account) && (
-            <div className="flex gap-1 justify-center mb-6">
-              {event.bank_account && (
-                <p className="text-gray-600 font-bold">
-                  Cuenta: {event.bank_account}
-                </p>
-              )}
-              {event.bank_name && (
-                <p className="text-gray-600 font-bold">
-                  Banco: {event.bank_name}
-                </p>
-              )}
-              <button
-                className="link"
-                onClick={() => copy(event.bank_account!)}
-              >
-                <Copy className="inline" />
-              </button>
-            </div>
-          )}
-
-          {event.clabe && (
-            <div className="flex gap-1 justify-center">
-              <p className="text-gray-600 font-bold">CLABE: {event.clabe}</p>
-              <button
-                className="link inline flex"
-                onClick={() => copy(event.clabe!)}
-              >
-                <Copy className="inline" />
-              </button>
-            </div>
+          {(event.bank_name || event.bank_account || event.clabe) && (
+            <button
+              onClick={() => setActiveModal("bank")}
+              className="py-4 px-8 bg-secondary text-sm text-white rounded-lg font-light tracking-wider uppercase shadow-lg hover:shadow-xl transition-all"
+            >
+              Efectivo / Transferencia
+            </button>
           )}
         </div>
       </div>
+
+      {/* Modal mesa de regalos */}
+      {activeModal === "registry" && selectedRegistry && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setActiveModal(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setActiveModal(null)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-2xl font-serif text-accent text-center mb-6">
+              {selectedRegistry.name}
+            </h3>
+            <div className="space-y-4 text-center">
+              <a
+                href={selectedRegistry.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block py-3 px-6 bg-primary text-white rounded-lg font-light tracking-wider uppercase hover:shadow-lg transition-all"
+              >
+                Ver mesa de regalos
+              </a>
+              {selectedRegistry.reference_number && (
+                <div className="mt-4">
+                  <p className="text-sm text-gray-500 mb-1">Número de referencia</p>
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="font-bold text-gray-800">
+                      {selectedRegistry.reference_number}
+                    </span>
+                    <button
+                      onClick={() => copy(selectedRegistry.reference_number!)}
+                      className="text-accent hover:text-secondary"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal transferencia bancaria */}
+      {activeModal === "bank" && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setActiveModal(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setActiveModal(null)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-2xl font-serif text-accent text-center mb-2">
+              Efectivo / Transferencia
+            </h3>
+            <p className="text-gray-500 text-center text-sm mb-6">
+              Nos haría muchísima ilusión que nos ayudaras a hacer realidad nuestro viaje de bodas. ✈️🌍💛
+            </p>
+            <div className="space-y-4">
+              {event.bank_name && (
+                <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase tracking-wide">Banco</p>
+                    <p className="font-semibold text-gray-800">{event.bank_name}</p>
+                  </div>
+                </div>
+              )}
+              {event.bank_account && (
+                <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase tracking-wide">Cuenta</p>
+                    <p className="font-semibold text-gray-800">{event.bank_account}</p>
+                  </div>
+                  <button
+                    onClick={() => copy(event.bank_account!)}
+                    className="text-accent hover:text-secondary ml-2"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+              {event.clabe && (
+                <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase tracking-wide">CLABE</p>
+                    <p className="font-semibold text-gray-800">{event.clabe}</p>
+                  </div>
+                  <button
+                    onClick={() => copy(event.clabe!)}
+                    className="text-accent hover:text-secondary ml-2"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white/60 backdrop-blur-sm p-12 max-w-xl mx-auto border-t">
         <h2 className="text-3xl font-serif text-center text-accent mb-10">
