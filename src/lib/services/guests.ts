@@ -6,7 +6,7 @@ import {
   StrapiSingleResponse,
   StrapiCollectionResponse,
 } from "../api";
-import type { Guest, GuestInput } from "../types";
+import type { Guest, GuestInput, GuestSearchResult } from "../types";
 
 const POPULATE = { populate: ["table", "companions", "event"] };
 
@@ -37,8 +37,16 @@ export async function getByCode(uniqueCode: string): Promise<Guest | null> {
   const res = await api.get<StrapiSingleResponse<Guest>>(
     `/guests/invitation/${eventDocumentId}/${uniqueCode}`,
   );
-  console.warn("getByCode response", res);
   return one(res) || null;
+}
+
+export async function search(query: string): Promise<GuestSearchResult[]> {
+  const eventDocumentId = import.meta.env.VITE_EVENT_ID;
+  const res = await api.get<{ data: GuestSearchResult[] }>(
+    `/guests/search/${eventDocumentId}`,
+    { params: { q: query } },
+  );
+  return res.data.data;
 }
 
 export async function create(

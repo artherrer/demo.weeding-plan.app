@@ -141,7 +141,7 @@ export interface Guest extends StrapiBase {
   phone?: string | null;
   note?: string | null;
   /** Relación table — presente solo si se popula */
-  table?: Pick<Table, "id" | "documentId" | "number"> | null;
+  table?: Pick<Table, "id" | "documentId" | "name"> | null;
   /** Relación companions — presente solo si se popula */
   companions?: Companion[];
   event?: Event | null;
@@ -150,12 +150,21 @@ export interface Guest extends StrapiBase {
 // ─── Table ───────────────────────────────────────────────────────────────────
 
 export interface Table extends StrapiBase {
-  number: number;
+  name: string;
   capacity: number;
   /** Capitán invitado — presente solo si se popula */
   captain_guest?: Pick<Guest, "id" | "documentId" | "full_name"> | null;
   /** Capitán acompañante — presente solo si se popula */
   captain_companion?: Pick<Companion, "id" | "documentId" | "full_name"> | null;
+}
+
+// ─── Búsqueda pública de invitados (para /asignacion) ────────────────────────
+
+export interface GuestSearchResult {
+  nombre: string;
+  codigo: string;
+  esAcompanante: boolean;
+  nombrePadre?: string;
 }
 
 // ─── Strapi User (users-permissions) ─────────────────────────────────────────
@@ -193,7 +202,7 @@ export interface CompanionInput {
 }
 
 export interface TableInput {
-  number: number;
+  name: string;
   capacity?: number;
   /** documentId del evento (requerido en create) */
   event?: string;

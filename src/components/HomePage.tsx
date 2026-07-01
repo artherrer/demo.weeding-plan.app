@@ -4,6 +4,7 @@ import {
   Clock,
   Copy,
   Gift,
+  Loader,
   MapPin,
   Shirt,
   Wine,
@@ -20,7 +21,7 @@ export default function HomePage() {
   const documentId = import.meta.env.VITE_EVENT_ID;
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeModal, setActiveModal] = useState<"registry" | "bank" | null>(null);
+  const [activeModal, setActiveModal] = useState<"registry" | "bank" | "cash" | null>(null);
   const [selectedRegistry, setSelectedRegistry] = useState<GiftRegistry | null>(null);
 
   useEffect(() => {
@@ -182,7 +183,14 @@ export default function HomePage() {
   };
 
   if (loading || !event) {
-    return <div className="p-10 text-center">Cargando...</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-amber-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader className="w-12 h-12 text-accent animate-spin mx-auto" />
+          <p className="mt-4 text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    );
   }
 
   const mainLocation = event.locations?.[0];
@@ -394,12 +402,19 @@ export default function HomePage() {
             </button>
           ))}
 
+          <button
+            onClick={() => setActiveModal("cash")}
+            className="py-4 px-8 bg-secondary text-sm text-white rounded-lg font-light tracking-wider uppercase shadow-lg hover:shadow-xl transition-all"
+          >
+            Efectivo
+          </button>
+
           {(event.bank_name || event.bank_account || event.clabe) && (
             <button
               onClick={() => setActiveModal("bank")}
               className="py-4 px-8 bg-secondary text-sm text-white rounded-lg font-light tracking-wider uppercase shadow-lg hover:shadow-xl transition-all"
             >
-              Efectivo / Transferencia
+              Transferencia
             </button>
           )}
         </div>
@@ -471,10 +486,13 @@ export default function HomePage() {
               <X className="w-5 h-5" />
             </button>
             <h3 className="text-2xl font-serif text-accent text-center mb-2">
-              Efectivo / Transferencia
+              Transferencia
             </h3>
-            <p className="text-gray-500 text-center text-sm mb-6">
+            <p className="text-gray-500 text-center text-sm">
               Nos haría muchísima ilusión que nos ayudaras a hacer realidad nuestro viaje de bodas. ✈️🌍💛
+            </p>
+            <p className="text-gray-500 text-center text-sm mb-6 mt-2">
+              Si deseas hacerlo mediante transferencia, aquí encontrarás nuestros datos bancarios.
             </p>
             <div className="space-y-4">
               {event.bank_name && (
@@ -514,6 +532,35 @@ export default function HomePage() {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal efectivo */}
+      {activeModal === "cash" && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setActiveModal(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setActiveModal(null)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-2xl font-serif text-accent text-center mb-2">
+              Efectivo
+            </h3>
+            <p className="text-gray-500 text-center text-sm">
+              Si prefieres obsequiarnos en efectivo, durante la recepción encontrarás un buzón para sobres. 💌🤍
+            </p>
+            <p className="text-gray-500 text-center text-sm mt-2">
+              Tu regalo nos ayudará a crear recuerdos inolvidables en nuestra luna de miel. ✈️🌴
+            </p>
           </div>
         </div>
       )}
