@@ -393,10 +393,7 @@ export default function HomePage() {
             style={{ height: "clamp(320px, 60vw, 640px)" }}
           >
             {galleryImages.map((image, index) => {
-              const imageUrl =
-                image.formats?.large?.url ||
-                image.formats?.medium?.url ||
-                image.url;
+              const imageUrl = image.url;
               return (
                 <div
                   key={image.id}
