@@ -6,6 +6,7 @@ import {
   Clock,
   Copy,
   Gift,
+  Heart,
   Loader,
   MapPin,
   Shirt,
@@ -16,8 +17,38 @@ import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { eventService } from "../lib/services";
 import { primaryColor } from "../lib/theme";
-import { Event, GiftRegistry } from "../lib/types";
+import { Event, FamilyMember, GiftRegistry, Godparent } from "../lib/types";
 import CountdownToDate from "./counter";
+
+// TODO: mock temporal — vendrá desde Strapi (Event.groom_parents / bride_parents / godparents)
+const MOCK_GROOM_PARENTS: FamilyMember[] = [
+  { id: 1, full_name: "Arturo Olvera Guerra" },
+  { id: 2, full_name: "Erika Nelly Herrera Navarro" },
+];
+
+const MOCK_BRIDE_PARENTS: FamilyMember[] = [
+  { id: 1, full_name: "José Gerardo Arreguin Pantoja" },
+  { id: 2, full_name: "Teresa Orduña Aguilar" },
+];
+
+const MOCK_GODPARENTS: Godparent[] = [
+  {
+    id: 1,
+    role: "Padrinos de Velación",
+    names: "Armando Olvera & Beatriz Cruz",
+  },
+  {
+    id: 2,
+    role: "Padrinos de Anillos",
+    names: "David Aranda",
+  },
+  {
+    id: 3,
+    role: "Padrinos de Arras",
+    names: "Israel Olvera",
+  },
+  { id: 4, role: "Padrinos de Lazo", names: "Isis León & Pablo Navarrete" },
+];
 
 export default function HomePage() {
   const documentId = import.meta.env.VITE_EVENT_ID;
@@ -214,6 +245,15 @@ export default function HomePage() {
 
   const backgroundImageUrl = event.background_image?.formats?.large?.url;
   const musicUrl = `${event.music?.url}`;
+  const groomParents = event.groom_parents?.length
+    ? event.groom_parents
+    : MOCK_GROOM_PARENTS;
+  const brideParents = event.bride_parents?.length
+    ? event.bride_parents
+    : MOCK_BRIDE_PARENTS;
+  const godparents = event.godparents?.length
+    ? event.godparents
+    : MOCK_GODPARENTS;
 
   return (
     <>
@@ -318,7 +358,7 @@ export default function HomePage() {
           </div>
         )}
 
-        <p className=" text-center my-12">
+        <p className=" text-center whitespace-pre-line my-12">
           {event.message ||
             "¡Estamos muy emocionados de compartir este día tan especial con ustedes! Gracias por ser parte de nuestras vidas y acompañarnos en esta nueva aventura que estamos por comenzar juntos."}
         </p>
@@ -370,7 +410,64 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className=" mt-10 mb-20 ">
+      <div className="bg-white/60 backdrop-blur-sm p-12 max-w-2xl mx-auto border-t">
+        <h2 className="text-3xl font-serif text-center text-accent mb-2">
+          Con la bendición de Dios y de nuestros padres
+        </h2>
+        <div className="w-16 h-px bg-secondary/40 mx-auto my-6"></div>
+
+        <div className="md:flex justify-between gap-12 mb-14">
+          <div className="flex-1 text-center mb-10 md:mb-0">
+            <p className="text-xs text-accent uppercase tracking-[0.2em] font-semibold mb-4">
+              Padres del Novio
+            </p>
+            <div className="space-y-2">
+              {groomParents.map((parent) => (
+                <p key={parent.id} className="text-lg font-light text-gray-700">
+                  {parent.full_name}
+                </p>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex-1 text-center">
+            <p className="text-xs text-accent uppercase tracking-[0.2em] font-semibold mb-4">
+              Padres de la Novia
+            </p>
+            <div className="space-y-2">
+              {brideParents.map((parent) => (
+                <p key={parent.id} className="text-lg font-light text-gray-700">
+                  {parent.full_name}
+                </p>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-center gap-3 mb-10">
+          <span className="h-px w-10 bg-secondary/30"></span>
+          <Heart className="w-4 h-4 text-accent" />
+          <span className="h-px w-10 bg-secondary/30"></span>
+        </div>
+
+        <p className="text-xs text-accent uppercase tracking-[0.2em] font-semibold text-center mb-8">
+          Padrinos
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-8">
+          {godparents.map((godparent) => (
+            <div key={godparent.id} className="text-center">
+              <p className="text-sm text-secondary tracking-wide mb-1">
+                {godparent.role}
+              </p>
+              <p className="text-lg font-light text-gray-700">
+                {godparent.names}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-white/60 backdrop-blur-sm p-12 max-w-2xl mx-auto border-t">
         <p className="font-bold mt-6 text-center text-xl md:text-2xl items-center text-accent">
           <Shirt className="inline" /> Código de vestimenta:{" "}
           {event.dress_code || "Formal"}
@@ -456,7 +553,7 @@ export default function HomePage() {
           <Gift className="inline text-lg" /> Regalo
         </h2>
 
-        <p className="text-gray-600 text-center mb-8">
+        <p className="text-gray-600 text-center whitespace-pre-line mb-8">
           {event.gift_message ||
             "Tu presencia es el mejor regalo que podríamos pedir."}
         </p>
@@ -568,7 +665,7 @@ export default function HomePage() {
             <h3 className="text-2xl font-serif text-accent text-center mb-2">
               Transferencia
             </h3>
-            <p className="text-gray-500 text-center text-sm mb-4">
+            <p className="text-gray-500 text-center text-sm mb-4 whitespace-pre-line">
               {event.gift_bank_message}
             </p>
             <div className="space-y-4">
@@ -642,7 +739,7 @@ export default function HomePage() {
             <h3 className="text-2xl font-serif text-accent text-center mb-2">
               Efectivo
             </h3>
-            <p className="text-gray-500 text-center text-sm">
+            <p className="text-gray-500 text-center text-sm whitespace-pre-line">
               {event.gift_cash_message}
             </p>
           </div>

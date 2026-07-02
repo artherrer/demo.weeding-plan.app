@@ -91,6 +91,17 @@ export interface Location {
   title?: string | null;
 }
 
+export interface FamilyMember {
+  id: number;
+  full_name: string;
+}
+
+export interface Godparent {
+  id: number;
+  role: string;
+  names: string;
+}
+
 // ─── Event ───────────────────────────────────────────────────────────────────
 
 export interface Event extends StrapiBase {
@@ -119,6 +130,9 @@ export interface Event extends StrapiBase {
   whatsapp_message?: string | null;
   bank_name?: string | null;
   event_host_names?: string | null;
+  groom_parents?: FamilyMember[];
+  bride_parents?: FamilyMember[];
+  godparents?: Godparent[];
 }
 
 // ─── Companion ───────────────────────────────────────────────────────────────
@@ -142,6 +156,7 @@ export interface Guest extends StrapiBase {
   status: "pending" | "yes" | "no";
   phone?: string | null;
   note?: string | null;
+  dietary_restrictions?: string | null;
   /** Relación table — presente solo si se popula */
   table?: Pick<Table, "id" | "documentId" | "name"> | null;
   /** Relación companions — presente solo si se popula */
@@ -190,6 +205,7 @@ export interface GuestInput {
   status?: "pending" | "yes" | "no";
   phone?: string | null;
   note?: string | null;
+  dietary_restrictions?: string | null;
   /** documentId del evento (requerido en create) */
   event?: string;
   /** documentId de la mesa (null para desasignar) */

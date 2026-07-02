@@ -30,6 +30,8 @@ export default function InvitationPage({ codigo }: InvitationPageProps) {
   const [confirmarAsistencia, setConfirmarAsistencia] = useState<
     boolean | null
   >(null);
+  const [restriccionesAlimentarias, setRestriccionesAlimentarias] =
+    useState("");
 
   useEffect(() => {
     loadInvitacion();
@@ -56,6 +58,7 @@ export default function InvitationPage({ codigo }: InvitationPageProps) {
         data.status === "yes" ? true : data.status === "no" ? false : null,
       );
       setAcompanantes(data.companions ?? []);
+      setRestriccionesAlimentarias(data.dietary_restrictions ?? "");
     } catch (err) {
       setError("Error al cargar la invitación");
       console.error(err);
@@ -82,6 +85,10 @@ export default function InvitationPage({ codigo }: InvitationPageProps) {
       await guestService.confirm(codigo, {
         status: statusValue,
         confirmed_passes: confirmarAsistencia === true ? pasesSeleccionados : 0,
+        dietary_restrictions:
+          confirmarAsistencia === true
+            ? restriccionesAlimentarias.trim() || null
+            : null,
         ...(confirmarAsistencia !== true ? { table: null } : {}),
       });
 
@@ -314,6 +321,26 @@ export default function InvitationPage({ codigo }: InvitationPageProps) {
                   >
                     +
                   </button>
+                </div>
+
+                <div className="pt-4">
+                  <label
+                    htmlFor="restricciones-alimentarias"
+                    className="block text-center text-sm text-gray-600 font-light mb-2"
+                  >
+                    ¿Alguna restricción alimentaria?{" "}
+                    <span className="text-gray-400">(opcional)</span>
+                  </label>
+                  <textarea
+                    id="restricciones-alimentarias"
+                    value={restriccionesAlimentarias}
+                    onChange={(e) =>
+                      setRestriccionesAlimentarias(e.target.value)
+                    }
+                    placeholder="Ej. vegetariano, alergia a los mariscos, sin gluten..."
+                    rows={2}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm text-gray-700 resize-none"
+                  />
                 </div>
               </div>
             )}
