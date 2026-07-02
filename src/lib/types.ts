@@ -101,13 +101,15 @@ export interface Event extends StrapiBase {
   event_date: string;
   confirmation_deadline?: string | null;
   background_image?: StrapiImage | null;
-  gallery_image?: StrapiImage | null;
+  gallery_image?: StrapiImage[] | [];
   music?: StrapiMedia | null;
   message?: string | null;
   dress_code?: string | null;
   dress_code_note?: string | null;
   color_palette?: string[] | null;
   gift_message?: string | null;
+  gift_cash_message?: string | null;
+  gift_bank_message?: string | null;
   bank_account?: string | null;
   clabe?: string | null;
   gift_registry?: GiftRegistry[];

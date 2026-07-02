@@ -1,5 +1,7 @@
 import {
   Calendar,
+  ChevronLeft,
+  ChevronRight,
   Church,
   Clock,
   Copy,
@@ -21,8 +23,23 @@ export default function HomePage() {
   const documentId = import.meta.env.VITE_EVENT_ID;
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeModal, setActiveModal] = useState<"registry" | "bank" | "cash" | null>(null);
-  const [selectedRegistry, setSelectedRegistry] = useState<GiftRegistry | null>(null);
+  const [activeModal, setActiveModal] = useState<
+    "registry" | "bank" | "cash" | null
+  >(null);
+  const [selectedRegistry, setSelectedRegistry] = useState<GiftRegistry | null>(
+    null,
+  );
+  const [activeSlide, setActiveSlide] = useState(0);
+
+  const galleryImages = event?.gallery_image ?? [];
+
+  useEffect(() => {
+    if (galleryImages.length < 2) return;
+    const interval = setInterval(() => {
+      setActiveSlide((prev) => (prev + 1) % galleryImages.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [galleryImages.length]);
 
   useEffect(() => {
     eventService
@@ -197,7 +214,6 @@ export default function HomePage() {
 
   const backgroundImageUrl = event.background_image?.formats?.large?.url;
   const musicUrl = `${event.music?.url}`;
-  const galleryImageUrl = `${event.gallery_image?.formats?.large?.url}`;
 
   return (
     <>
@@ -295,7 +311,7 @@ export default function HomePage() {
       <div className="bg-white/60 backdrop-blur-sm p-12 max-w-xl mx-auto">
         {event.music && (
           <div className=" flex justify-center">
-            <audio controls className="mb-6" autoPlay={false}>
+            <audio controls className="mb-6" autoPlay={true}>
               <source src={musicUrl} type="audio/mp3" />
               Your browser does not support the audio element.
             </audio>
@@ -361,21 +377,81 @@ export default function HomePage() {
         </p>
         <p className="text-center mt-4">{event.dress_code_note || ""}</p>
         <div className="flex justify-center gap-4 mt-6">
-          <div className="bg-primary w-5 h-5 rounded-full"></div>
-          <div className="bg-secondary w-5 h-5 rounded-full"></div>
-          <div className="bg-accent w-5 h-5 rounded-full"></div>
-          <div className="bg-background w-5 h-5 rounded-full"></div>
+          {event.color_palette?.map((color) => (
+            <div
+              className="w-5 h-5 rounded-full"
+              style={{ backgroundColor: color }}
+            ></div>
+          ))}
         </div>
       </div>
 
-      {event.gallery_image && (
-        <div
-          className="w-full bg-center bg-cover"
-          style={{
-            backgroundImage: `url(${galleryImageUrl})`,
-            height: "clamp(300px, 50vw, 600px)",
-          }}
-        />
+      {galleryImages.length > 0 && (
+        <div className="relative w-full overflow-hidden bg-black/5">
+          <div
+            className="relative w-full"
+            style={{ height: "clamp(320px, 60vw, 640px)" }}
+          >
+            {galleryImages.map((image, index) => {
+              const imageUrl =
+                image.formats?.large?.url ||
+                image.formats?.medium?.url ||
+                image.url;
+              return (
+                <div
+                  key={image.id}
+                  className="absolute inset-0 bg-center bg-cover transition-opacity duration-1000 ease-in-out"
+                  style={{
+                    backgroundImage: `url(${imageUrl})`,
+                    opacity: index === activeSlide ? 1 : 0,
+                  }}
+                />
+              );
+            })}
+
+            {galleryImages.length > 1 && (
+              <>
+                <button
+                  onClick={() =>
+                    setActiveSlide(
+                      (prev) =>
+                        (prev - 1 + galleryImages.length) %
+                        galleryImages.length,
+                    )
+                  }
+                  aria-label="Foto anterior"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/70 backdrop-blur-sm flex items-center justify-center text-accent hover:bg-white/90 transition-colors"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() =>
+                    setActiveSlide((prev) => (prev + 1) % galleryImages.length)
+                  }
+                  aria-label="Foto siguiente"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/70 backdrop-blur-sm flex items-center justify-center text-accent hover:bg-white/90 transition-colors"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+                  {galleryImages.map((image, index) => (
+                    <button
+                      key={image.id}
+                      onClick={() => setActiveSlide(index)}
+                      aria-label={`Ir a la foto ${index + 1}`}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        index === activeSlide
+                          ? "w-8 bg-white"
+                          : "w-1.5 bg-white/50"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       )}
 
       <div className="bg-white/60 backdrop-blur-sm p-12 max-w-xl mx-auto border-t">
@@ -402,14 +478,19 @@ export default function HomePage() {
             </button>
           ))}
 
-          <button
-            onClick={() => setActiveModal("cash")}
-            className="py-4 px-8 bg-secondary text-sm text-white rounded-lg font-light tracking-wider uppercase shadow-lg hover:shadow-xl transition-all"
-          >
-            Efectivo
-          </button>
+          {event.gift_cash_message && (
+            <button
+              onClick={() => setActiveModal("cash")}
+              className="py-4 px-8 bg-secondary text-sm text-white rounded-lg font-light tracking-wider uppercase shadow-lg hover:shadow-xl transition-all"
+            >
+              Efectivo
+            </button>
+          )}
 
-          {(event.bank_name || event.bank_account || event.clabe) && (
+          {(event.bank_name ||
+            event.bank_account ||
+            event.clabe ||
+            event.gift_bank_message) && (
             <button
               onClick={() => setActiveModal("bank")}
               className="py-4 px-8 bg-secondary text-sm text-white rounded-lg font-light tracking-wider uppercase shadow-lg hover:shadow-xl transition-all"
@@ -450,7 +531,9 @@ export default function HomePage() {
               </a>
               {selectedRegistry.reference_number && (
                 <div className="mt-4">
-                  <p className="text-sm text-gray-500 mb-1">Número de referencia</p>
+                  <p className="text-sm text-gray-500 mb-1">
+                    Número de referencia
+                  </p>
                   <div className="flex items-center justify-center gap-2">
                     <span className="font-bold text-gray-800">
                       {selectedRegistry.reference_number}
@@ -488,26 +571,31 @@ export default function HomePage() {
             <h3 className="text-2xl font-serif text-accent text-center mb-2">
               Transferencia
             </h3>
-            <p className="text-gray-500 text-center text-sm">
-              Nos haría muchísima ilusión que nos ayudaras a hacer realidad nuestro viaje de bodas. ✈️🌍💛
-            </p>
-            <p className="text-gray-500 text-center text-sm mb-6 mt-2">
-              Si deseas hacerlo mediante transferencia, aquí encontrarás nuestros datos bancarios.
+            <p className="text-gray-500 text-center text-sm mb-4">
+              {event.gift_bank_message}
             </p>
             <div className="space-y-4">
               {event.bank_name && (
                 <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
                   <div>
-                    <p className="text-xs text-gray-400 uppercase tracking-wide">Banco</p>
-                    <p className="font-semibold text-gray-800">{event.bank_name}</p>
+                    <p className="text-xs text-gray-400 uppercase tracking-wide">
+                      Banco
+                    </p>
+                    <p className="font-semibold text-gray-800">
+                      {event.bank_name}
+                    </p>
                   </div>
                 </div>
               )}
               {event.bank_account && (
                 <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
                   <div>
-                    <p className="text-xs text-gray-400 uppercase tracking-wide">Cuenta</p>
-                    <p className="font-semibold text-gray-800">{event.bank_account}</p>
+                    <p className="text-xs text-gray-400 uppercase tracking-wide">
+                      Cuenta
+                    </p>
+                    <p className="font-semibold text-gray-800">
+                      {event.bank_account}
+                    </p>
                   </div>
                   <button
                     onClick={() => copy(event.bank_account!)}
@@ -520,7 +608,9 @@ export default function HomePage() {
               {event.clabe && (
                 <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
                   <div>
-                    <p className="text-xs text-gray-400 uppercase tracking-wide">CLABE</p>
+                    <p className="text-xs text-gray-400 uppercase tracking-wide">
+                      CLABE
+                    </p>
                     <p className="font-semibold text-gray-800">{event.clabe}</p>
                   </div>
                   <button
@@ -556,10 +646,7 @@ export default function HomePage() {
               Efectivo
             </h3>
             <p className="text-gray-500 text-center text-sm">
-              Si prefieres obsequiarnos en efectivo, durante la recepción encontrarás un buzón para sobres. 💌🤍
-            </p>
-            <p className="text-gray-500 text-center text-sm mt-2">
-              Tu regalo nos ayudará a crear recuerdos inolvidables en nuestra luna de miel. ✈️🌴
+              {event.gift_cash_message}
             </p>
           </div>
         </div>
