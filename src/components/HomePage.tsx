@@ -243,7 +243,7 @@ export default function HomePage() {
 
   const mainLocation = event.locations?.[0];
 
-  const backgroundImageUrl = event.background_image?.formats?.large?.url;
+  const backgroundImageUrl = event.background_image?.url;
   const musicUrl = `${event.music?.url}`;
   const groomParents = event.groom_parents?.length
     ? event.groom_parents
@@ -468,10 +468,14 @@ export default function HomePage() {
       </div>
 
       <div className="bg-white/60 backdrop-blur-sm p-12 max-w-2xl mx-auto border-t">
-        <p className="font-bold mt-6 text-center text-xl md:text-2xl items-center text-accent">
-          <Shirt className="inline" /> Código de vestimenta:{" "}
-          {event.dress_code || "Formal"}
-        </p>
+        <div className="md:flex gap-2 justify-center">
+          <p className="font-bold mt-6 text-center text-xl md:text-2xl items-center text-accent">
+            <Shirt className="inline" /> Código de vestimenta:{" "}
+          </p>
+          <p className="font-extrabold mt-6 text-center text-2xl md:text-2xl items-center text-accent underline">
+            {event.dress_code || "Formal"}
+          </p>
+        </div>
         <p className="text-center mt-4">{event.dress_code_note || ""}</p>
         <div className="flex justify-center gap-4 mt-6">
           {event.color_palette?.map((color) => (
