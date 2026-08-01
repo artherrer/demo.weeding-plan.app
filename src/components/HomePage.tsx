@@ -13,7 +13,7 @@ import {
   Wine,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { eventService } from "../lib/services";
 import { primaryColor } from "../lib/theme";
@@ -27,7 +27,7 @@ const MOCK_GROOM_PARENTS: FamilyMember[] = [
 ];
 
 const MOCK_BRIDE_PARENTS: FamilyMember[] = [
-  { id: 1, full_name: "José Gerardo Arreguin Pantoja" },
+  { id: 1, full_name: "Gerardo Arreguin Pantoja" },
   { id: 2, full_name: "Teresa Orduña Aguilar" },
 ];
 
@@ -61,8 +61,31 @@ export default function HomePage() {
     null,
   );
   const [activeSlide, setActiveSlide] = useState(0);
+  const [heroOffset, setHeroOffset] = useState(0);
+  const [galleryOffset, setGalleryOffset] = useState(0);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const galleryRef = useRef<HTMLDivElement>(null);
 
   const galleryImages = event?.gallery_image ?? [];
+
+  useEffect(() => {
+    const PARALLAX_STRENGTH = 0.3;
+
+    const onScroll = () => {
+      if (heroRef.current) {
+        const rect = heroRef.current.getBoundingClientRect();
+        setHeroOffset(rect.top * PARALLAX_STRENGTH);
+      }
+      if (galleryRef.current) {
+        const rect = galleryRef.current.getBoundingClientRect();
+        setGalleryOffset(rect.top * PARALLAX_STRENGTH);
+      }
+    };
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     if (galleryImages.length < 2) return;
@@ -258,19 +281,23 @@ export default function HomePage() {
   return (
     <>
       <div
-        className="min-h-screen bg-cover bg-center bg-no-repeat flex items-center"
-        style={{
-          backgroundImage: backgroundImageUrl
-            ? `url(${backgroundImageUrl})`
-            : `
-              radial-gradient(ellipse at 20% 30%, rgba(199,98,61,0.15) 0%, transparent 60%),
-              radial-gradient(ellipse at 80% 70%, rgba(144,64,41,0.12) 0%, transparent 55%),
-              radial-gradient(ellipse at 60% 10%, rgba(135,66,33,0.08) 0%, transparent 50%),
-              linear-gradient(160deg, #1a1208 0%, #2c1a0e 40%, #1e120a 100%)
-            `,
-          height: "100hv",
-        }}
+        ref={heroRef}
+        className="relative min-h-screen overflow-hidden flex items-center"
       >
+        <div
+          className="absolute -inset-y-16 inset-x-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: backgroundImageUrl
+              ? `url(${backgroundImageUrl})`
+              : `
+                radial-gradient(ellipse at 20% 30%, rgba(199,98,61,0.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 70%, rgba(144,64,41,0.12) 0%, transparent 55%),
+                radial-gradient(ellipse at 60% 10%, rgba(135,66,33,0.08) 0%, transparent 50%),
+                linear-gradient(160deg, #1a1208 0%, #2c1a0e 40%, #1e120a 100%)
+              `,
+            transform: `translateY(${heroOffset}px)`,
+          }}
+        ></div>
         <div className="absolute inset-0 bg-black/30"></div>
 
         <div className="relative w-full max-w-7xl mx-auto px-4 py-16">
@@ -488,7 +515,10 @@ export default function HomePage() {
       </div>
 
       {galleryImages.length > 0 && (
-        <div className="relative w-full overflow-hidden bg-black/5">
+        <div
+          ref={galleryRef}
+          className="relative w-full overflow-hidden bg-black/5"
+        >
           <div
             className="relative w-full"
             style={{ height: "clamp(320px, 60vw, 640px)" }}
@@ -498,10 +528,11 @@ export default function HomePage() {
               return (
                 <div
                   key={image.id}
-                  className="absolute inset-0 bg-center bg-cover transition-opacity duration-1000 ease-in-out"
+                  className="absolute -inset-y-16 inset-x-0 bg-center bg-cover transition-opacity duration-1000 ease-in-out"
                   style={{
                     backgroundImage: `url(${imageUrl})`,
                     opacity: index === activeSlide ? 1 : 0,
+                    transform: `translateY(${galleryOffset}px)`,
                   }}
                 />
               );
