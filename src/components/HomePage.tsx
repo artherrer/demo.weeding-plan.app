@@ -791,7 +791,7 @@ export default function HomePage() {
         </h2>
 
         {codigoParam ? (
-          <ConfirmationForm codigo={codigoParam} variant="embedded" />
+          <ConfirmationForm codigo={codigoParam} variant="embedded" showDetails={false} />
         ) : (
           <>
             <p className="text-center text-gray-600 leading-relaxed">

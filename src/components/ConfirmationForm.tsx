@@ -18,11 +18,13 @@ interface ConfirmationFormProps {
   codigo: string;
   /** "full": página completa (usado en /invitacion/:codigo). "embedded": solo el contenido del formulario, para incrustar en otra página (Home). */
   variant?: "full" | "embedded";
+  showDetails?: boolean;
 }
 
 export default function ConfirmationForm({
   codigo,
   variant = "full",
+  showDetails = true,
 }: ConfirmationFormProps) {
   const [invitado, setInvitado] = useState<Guest | null>(null);
   const [evento, setEvento] = useState<Event | null>(null);
@@ -173,77 +175,79 @@ export default function ConfirmationForm({
       </div>
 
       {/* DETALLES DEL EVENTO */}
-      <div className="mb-8 rounded-xl border border-accent/20 bg-white/50 p-6 space-y-5">
-        <div className="flex items-center gap-2 justify-center mb-2">
-          <Calendar className="w-4 h-4 text-accent" />
-          <span className="text-sm font-semibold text-accent uppercase tracking-widest">
-            {evento?.event_date
-              ? new Date(evento.event_date).toLocaleDateString("es-MX", {
-                  weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })
-              : "Fecha por confirmar"}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="flex flex-col items-center text-center gap-2 p-4 rounded-lg bg-white/60">
-            <Church className="w-6 h-6 text-accent" />
-            <p className="text-xs text-accent uppercase tracking-widest font-semibold">
-              {evento?.locations?.[0]?.title || "Ceremonia"}
-            </p>
-            <p className="text-gray-800 font-light">
-              {evento?.locations?.[0]?.name || "Lugar por confirmar"}
-            </p>
-            <div className="flex items-center gap-1 text-gray-500 text-sm">
-              <Clock className="w-3.5 h-3.5" />
-              <span>
-                {evento?.locations?.[0]?.time || "Hora por confirmar"}
-              </span>
-            </div>
-            {evento?.locations?.[0]?.map_url && (
-              <a
-                href={evento?.locations?.[0]?.map_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-primary text-sm underline hover:text-accent transition-colors mt-1"
-              >
-                <MapPin className="w-3.5 h-3.5" />
-                Cómo llegar
-              </a>
-            )}
+      {showDetails && (
+        <div className="mb-8 rounded-xl border border-accent/20 bg-white/50 p-6 space-y-5">
+          <div className="flex items-center gap-2 justify-center mb-2">
+            <Calendar className="w-4 h-4 text-accent" />
+            <span className="text-sm font-semibold text-accent uppercase tracking-widest">
+              {evento?.event_date
+                ? new Date(evento.event_date).toLocaleDateString("es-MX", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })
+                : "Fecha por confirmar"}
+            </span>
           </div>
 
-          <div className="flex flex-col items-center text-center gap-2 p-4 rounded-lg bg-white/60">
-            <Wine className="w-6 h-6 text-accent" />
-            <p className="text-xs text-accent uppercase tracking-widest font-semibold">
-              {evento?.locations?.[1]?.title || "Recepción"}
-            </p>
-            <p className="text-gray-800 font-light">
-              {evento?.locations?.[1]?.name || "Lugar por confirmar"}
-            </p>
-            <div className="flex items-center gap-1 text-gray-500 text-sm">
-              <Clock className="w-3.5 h-3.5" />
-              <span>
-                {evento?.locations?.[1]?.time || "Hora por confirmar"}
-              </span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex flex-col items-center text-center gap-2 p-4 rounded-lg bg-white/60">
+              <Church className="w-6 h-6 text-accent" />
+              <p className="text-xs text-accent uppercase tracking-widest font-semibold">
+                {evento?.locations?.[0]?.title || "Ceremonia"}
+              </p>
+              <p className="text-gray-800 font-light">
+                {evento?.locations?.[0]?.name || "Lugar por confirmar"}
+              </p>
+              <div className="flex items-center gap-1 text-gray-500 text-sm">
+                <Clock className="w-3.5 h-3.5" />
+                <span>
+                  {evento?.locations?.[0]?.time || "Hora por confirmar"}
+                </span>
+              </div>
+              {evento?.locations?.[0]?.map_url && (
+                <a
+                  href={evento?.locations?.[0]?.map_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-primary text-sm underline hover:text-accent transition-colors mt-1"
+                >
+                  <MapPin className="w-3.5 h-3.5" />
+                  Cómo llegar
+                </a>
+              )}
             </div>
-            {evento?.locations?.[1]?.map_url && (
-              <a
-                href={evento?.locations?.[1]?.map_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-primary text-sm underline hover:text-accent transition-colors mt-1"
-              >
-                <MapPin className="w-3.5 h-3.5" />
-                Cómo llegar
-              </a>
-            )}
+
+            <div className="flex flex-col items-center text-center gap-2 p-4 rounded-lg bg-white/60">
+              <Wine className="w-6 h-6 text-accent" />
+              <p className="text-xs text-accent uppercase tracking-widest font-semibold">
+                {evento?.locations?.[1]?.title || "Recepción"}
+              </p>
+              <p className="text-gray-800 font-light">
+                {evento?.locations?.[1]?.name || "Lugar por confirmar"}
+              </p>
+              <div className="flex items-center gap-1 text-gray-500 text-sm">
+                <Clock className="w-3.5 h-3.5" />
+                <span>
+                  {evento?.locations?.[1]?.time || "Hora por confirmar"}
+                </span>
+              </div>
+              {evento?.locations?.[1]?.map_url && (
+                <a
+                  href={evento?.locations?.[1]?.map_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-primary text-sm underline hover:text-accent transition-colors mt-1"
+                >
+                  <MapPin className="w-3.5 h-3.5" />
+                  Cómo llegar
+                </a>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="space-y-8">
         <div>
@@ -279,9 +283,7 @@ export default function ConfirmationForm({
               }`}
             >
               <XCircle className="text-red-500 w-6 h-6 mx-auto mb-2" />
-              <span className="font-light tracking-wide">
-                No podré asistir
-              </span>
+              <span className="font-light tracking-wide">No podré asistir</span>
             </button>
           </div>
         </div>
@@ -318,10 +320,7 @@ export default function ConfirmationForm({
               <button
                 onClick={() =>
                   setPasesSeleccionados(
-                    Math.min(
-                      invitado?.max_passes || 0,
-                      pasesSeleccionados + 1,
-                    ),
+                    Math.min(invitado?.max_passes || 0, pasesSeleccionados + 1),
                   )
                 }
                 disabled={pasesSeleccionados >= (invitado?.max_passes || 0)}
@@ -342,9 +341,7 @@ export default function ConfirmationForm({
               <textarea
                 id="restricciones-alimentarias"
                 value={restriccionesAlimentarias}
-                onChange={(e) =>
-                  setRestriccionesAlimentarias(e.target.value)
-                }
+                onChange={(e) => setRestriccionesAlimentarias(e.target.value)}
                 placeholder="Ej. vegetariano, alergia a los mariscos, sin gluten..."
                 rows={2}
                 className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm text-gray-700 resize-none"
