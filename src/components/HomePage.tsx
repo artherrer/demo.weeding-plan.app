@@ -13,11 +13,12 @@ import {
   Wine,
   X,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { eventService } from "../lib/services";
 import { primaryColor } from "../lib/theme";
 import { Event, FamilyMember, GiftRegistry, Godparent } from "../lib/types";
+import ConfirmationForm from "./ConfirmationForm";
 import CountdownToDate from "./counter";
 
 // TODO: mock temporal — vendrá desde Strapi (Event.groom_parents / bride_parents / godparents)
@@ -61,31 +62,9 @@ export default function HomePage() {
     null,
   );
   const [activeSlide, setActiveSlide] = useState(0);
-  const [heroOffset, setHeroOffset] = useState(0);
-  const [galleryOffset, setGalleryOffset] = useState(0);
-  const heroRef = useRef<HTMLDivElement>(null);
-  const galleryRef = useRef<HTMLDivElement>(null);
+  const codigoParam = new URLSearchParams(window.location.search).get("q");
 
   const galleryImages = event?.gallery_image ?? [];
-
-  useEffect(() => {
-    const PARALLAX_STRENGTH = 0.3;
-
-    const onScroll = () => {
-      if (heroRef.current) {
-        const rect = heroRef.current.getBoundingClientRect();
-        setHeroOffset(rect.top * PARALLAX_STRENGTH);
-      }
-      if (galleryRef.current) {
-        const rect = galleryRef.current.getBoundingClientRect();
-        setGalleryOffset(rect.top * PARALLAX_STRENGTH);
-      }
-    };
-
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   useEffect(() => {
     if (galleryImages.length < 2) return;
@@ -210,19 +189,14 @@ export default function HomePage() {
     const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
     const isAndroid = /Android/i.test(navigator.userAgent);
 
-    if (isIOS) {
-      // iOS: data URI con webcal — abre directo en Calendario
-      const dataUrl =
-        "data:text/calendar;charset=utf-8," + encodeURIComponent(icsContent);
-      window.location.href = dataUrl;
-      toast.success("Evento agregado al calendario");
-    } else if (isAndroid && navigator.share) {
-      const blob = new Blob([icsContent], {
-        type: "text/calendar;charset=utf-8",
-      });
-      const file = new File([blob], `${event?.main_title || "event"}.ics`, {
-        type: "text/calendar",
-      });
+    const blob = new Blob([icsContent], {
+      type: "text/calendar;charset=utf-8",
+    });
+    const file = new File([blob], `${event?.main_title || "event"}.ics`, {
+      type: "text/calendar",
+    });
+
+    if (isAndroid && navigator.canShare?.({ files: [file] })) {
       navigator
         .share({
           title: event?.main_title || "Event",
@@ -230,6 +204,18 @@ export default function HomePage() {
           files: [file],
         })
         .catch(() => downloadICS(icsContent));
+    } else if (isIOS) {
+      // iOS bloquea navegación a data: URIs — usamos un link a Blob para abrir el visor nativo de .ics
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.target = "_blank";
+      link.rel = "noopener";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 100);
+      toast.success("Evento agregado al calendario");
     } else {
       downloadICS(icsContent);
     }
@@ -280,12 +266,9 @@ export default function HomePage() {
 
   return (
     <>
-      <div
-        ref={heroRef}
-        className="relative min-h-screen overflow-hidden flex items-center"
-      >
+      <div className="relative min-h-screen overflow-hidden flex items-center">
         <div
-          className="absolute -inset-y-16 inset-x-0 bg-cover bg-center bg-no-repeat"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: backgroundImageUrl
               ? `url(${backgroundImageUrl})`
@@ -295,7 +278,6 @@ export default function HomePage() {
                 radial-gradient(ellipse at 60% 10%, rgba(135,66,33,0.08) 0%, transparent 50%),
                 linear-gradient(160deg, #1a1208 0%, #2c1a0e 40%, #1e120a 100%)
               `,
-            transform: `translateY(${heroOffset}px)`,
           }}
         ></div>
         <div className="absolute inset-0 bg-black/30"></div>
@@ -515,10 +497,7 @@ export default function HomePage() {
       </div>
 
       {galleryImages.length > 0 && (
-        <div
-          ref={galleryRef}
-          className="relative w-full overflow-hidden bg-black/5"
-        >
+        <div className="relative w-full overflow-hidden bg-black/5">
           <div
             className="relative w-full"
             style={{ height: "clamp(320px, 60vw, 640px)" }}
@@ -528,11 +507,10 @@ export default function HomePage() {
               return (
                 <div
                   key={image.id}
-                  className="absolute -inset-y-16 inset-x-0 bg-center bg-cover transition-opacity duration-1000 ease-in-out"
+                  className="absolute inset-0 bg-center bg-cover transition-opacity duration-1000 ease-in-out"
                   style={{
                     backgroundImage: `url(${imageUrl})`,
                     opacity: index === activeSlide ? 1 : 0,
-                    transform: `translateY(${galleryOffset}px)`,
                   }}
                 />
               );
@@ -812,48 +790,59 @@ export default function HomePage() {
           Confirma tu Asistencia
         </h2>
 
-        <p className="text-center text-gray-600 leading-relaxed">
-          Si has recibido una invitación, accede con tu código único para
-          confirmar tu asistencia.
-        </p>
-        <p className="text-center text-gray-600 mb-8 leading-relaxed bold">
-          Fecha limite de confirmación de asistencia:{" "}
-          {new Date(event.confirmation_deadline!).toLocaleDateString("es-ES", {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          })}
-        </p>
-        <div className="max-w-md mx-auto">
-          <input
-            type="text"
-            placeholder="Ingresa tu código de invitación"
-            className="w-full px-6 py-4 rounded-lg border border-secondary focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent text-center text-lg tracking-wider uppercase"
-            id="codigo-invitacion"
-            onKeyPress={(e) => {
-              if (e.key === "Enter") {
-                const codigo = (e.target as HTMLInputElement).value.trim();
-                if (codigo) {
-                  window.location.href = `/invitacion/${codigo}`;
-                }
-              }
-            }}
-          />
-          <button
-            onClick={() => {
-              const input = document.getElementById(
-                "codigo-invitacion",
-              ) as HTMLInputElement;
-              const codigo = input?.value.trim();
-              if (codigo) {
-                window.location.href = `/invitacion/${codigo}`;
-              }
-            }}
-            className="w-full mt-4 px-8 py-4 bg-primary text-white rounded-lg hover:from-rose-500 hover:to-amber-500 transition-all duration-300 font-light tracking-wider uppercase shadow-lg hover:shadow-xl"
-          >
-            Acceder
-          </button>
-        </div>
+        {codigoParam ? (
+          <ConfirmationForm codigo={codigoParam} variant="embedded" />
+        ) : (
+          <>
+            <p className="text-center text-gray-600 leading-relaxed">
+              Si has recibido una invitación, accede con tu código único para
+              confirmar tu asistencia.
+            </p>
+            <p className="text-center text-gray-600 mb-8 leading-relaxed bold">
+              Fecha limite de confirmación de asistencia:{" "}
+              {new Date(event.confirmation_deadline!).toLocaleDateString(
+                "es-ES",
+                {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                },
+              )}
+            </p>
+            <div className="max-w-md mx-auto">
+              <input
+                type="text"
+                placeholder="Ingresa tu código de invitación"
+                className="w-full px-6 py-4 rounded-lg border border-secondary focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent text-center text-lg tracking-wider uppercase"
+                id="codigo-invitacion"
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    const codigo = (
+                      e.target as HTMLInputElement
+                    ).value.trim();
+                    if (codigo) {
+                      window.location.href = `/invitacion/${codigo}`;
+                    }
+                  }
+                }}
+              />
+              <button
+                onClick={() => {
+                  const input = document.getElementById(
+                    "codigo-invitacion",
+                  ) as HTMLInputElement;
+                  const codigo = input?.value.trim();
+                  if (codigo) {
+                    window.location.href = `/invitacion/${codigo}`;
+                  }
+                }}
+                className="w-full mt-4 px-8 py-4 bg-primary text-white rounded-lg hover:from-rose-500 hover:to-amber-500 transition-all duration-300 font-light tracking-wider uppercase shadow-lg hover:shadow-xl"
+              >
+                Acceder
+              </button>
+            </div>
+          </>
+        )}
       </div>
 
       {event.event_host_names && (
