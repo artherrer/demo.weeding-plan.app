@@ -785,7 +785,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="bg-white/60 backdrop-blur-sm rounded-2xl shadow-xl p-12 border border-rose-100">
+      <div className="bg-white/60 backdrop-blur-sm p-12 max-w-xl mx-auto border-t">
         <h2 className="text-3xl font-serif text-center text-accent mb-8">
           Confirma tu Asistencia
         </h2>

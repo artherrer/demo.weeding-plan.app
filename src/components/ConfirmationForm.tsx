@@ -13,6 +13,8 @@ import {
   Calendar,
   Clock,
 } from "lucide-react";
+import toast, { Toaster } from "react-hot-toast";
+import { primaryColor } from "../lib/theme";
 
 interface ConfirmationFormProps {
   codigo: string;
@@ -99,10 +101,12 @@ export default function ConfirmationForm({
         ...(confirmarAsistencia !== true ? { table: null } : {}),
       });
 
-      setSuccess("Confirmación guardada exitosamente");
+
+      toast.success("Confirmación guardada exitosamente");
+      
       await loadInvitacion();
     } catch (err) {
-      setError("Error al guardar la confirmación");
+      toast.error("Error al guardar la confirmación");
       console.error(err);
     } finally {
       setSaving(false);
