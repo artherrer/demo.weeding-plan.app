@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { guestService } from "../lib/services";
 import type { Guest } from "../lib/types";
 import { Armchair, Heart, Loader, XCircle } from "lucide-react";
+import SittingPlan from "./SittingPlan";
 
 interface AsignacionPageProps {
   codigo: string;
@@ -30,6 +31,12 @@ export default function AsignacionPage({ codigo }: AsignacionPageProps) {
       .catch(() => setError("Error al cargar la asignación de mesa"))
       .finally(() => setLoading(false));
   }, [codigo]);
+
+  const tableNameToNumber = (tableName: string | undefined): number => {
+    if (!tableName) return 0;
+    const tableNumber = parseInt(tableName, 10);
+    return isNaN(tableNumber) ? 0 : tableNumber;
+  };
 
   if (loading) {
     return (
@@ -79,15 +86,20 @@ export default function AsignacionPage({ codigo }: AsignacionPageProps) {
           </h2>
 
           {invitado.table ? (
-            <div className="rounded-xl border border-accent/20 bg-white/50 p-8">
-              <Armchair className="w-10 h-10 text-accent mx-auto mb-4" />
-              <p className="text-sm font-semibold text-accent uppercase tracking-widest mb-2">
-                Mesa asignada
-              </p>
-              <p className="text-5xl font-serif text-gray-800">
-                {invitado.table.name}
-              </p>
-            </div>
+            <>
+              <div className="rounded-xl border border-accent/20 bg-white/50 p-8">
+                <Armchair className="w-10 h-10 text-accent mx-auto mb-4" />
+                <p className="text-sm font-semibold text-accent uppercase tracking-widest mb-2">
+                  Mesa asignada
+                </p>
+                <p className="text-5xl font-serif text-gray-800">
+                  {invitado.table.name}
+                </p>
+              </div>
+              <SittingPlan
+                assignedTable={tableNameToNumber(invitado.table.name)}
+              />
+            </>
           ) : (
             <div className="rounded-xl border border-accent/20 bg-white/50 p-8">
               <Armchair className="w-10 h-10 text-gray-300 mx-auto mb-4" />
