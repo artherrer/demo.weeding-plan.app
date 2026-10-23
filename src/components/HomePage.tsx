@@ -18,7 +18,6 @@ import toast, { Toaster } from "react-hot-toast";
 import { eventService } from "../lib/services";
 import { primaryColor } from "../lib/theme";
 import { Event, FamilyMember, GiftRegistry, Godparent } from "../lib/types";
-import ConfirmationForm from "./ConfirmationForm";
 import CountdownToDate from "./counter";
 
 // TODO: mock temporal — vendrá desde Strapi (Event.groom_parents / bride_parents / godparents)
@@ -62,7 +61,6 @@ export default function HomePage() {
     null,
   );
   const [activeSlide, setActiveSlide] = useState(0);
-  const codigoParam = new URLSearchParams(window.location.search).get("q");
 
   const galleryImages = event?.gallery_image ?? [];
 
@@ -783,66 +781,6 @@ export default function HomePage() {
             </div>
           ))}
         </div>
-      </div>
-
-      <div className="bg-white/60 backdrop-blur-sm p-12 max-w-xl mx-auto border-t">
-        <h2 className="text-3xl font-serif text-center text-accent mb-8">
-          Confirma tu Asistencia
-        </h2>
-
-        {codigoParam ? (
-          <ConfirmationForm codigo={codigoParam} variant="embedded" showDetails={false} />
-        ) : (
-          <>
-            <p className="text-center text-gray-600 leading-relaxed">
-              Si has recibido una invitación, accede con tu código único para
-              confirmar tu asistencia.
-            </p>
-            <p className="text-center text-gray-600 mb-8 leading-relaxed bold">
-              Fecha limite de confirmación de asistencia:{" "}
-              {new Date(event.confirmation_deadline!).toLocaleDateString(
-                "es-ES",
-                {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                },
-              )}
-            </p>
-            <div className="max-w-md mx-auto">
-              <input
-                type="text"
-                placeholder="Ingresa tu código de invitación"
-                className="w-full px-6 py-4 rounded-lg border border-secondary focus:outline-none focus:ring-2 focus:ring-secondary focus:border-transparent text-center text-lg tracking-wider uppercase"
-                id="codigo-invitacion"
-                onKeyPress={(e) => {
-                  if (e.key === "Enter") {
-                    const codigo = (
-                      e.target as HTMLInputElement
-                    ).value.trim();
-                    if (codigo) {
-                      window.location.href = `/invitacion/${codigo}`;
-                    }
-                  }
-                }}
-              />
-              <button
-                onClick={() => {
-                  const input = document.getElementById(
-                    "codigo-invitacion",
-                  ) as HTMLInputElement;
-                  const codigo = input?.value.trim();
-                  if (codigo) {
-                    window.location.href = `/invitacion/${codigo}`;
-                  }
-                }}
-                className="w-full mt-4 px-8 py-4 bg-primary text-white rounded-lg hover:from-rose-500 hover:to-amber-500 transition-all duration-300 font-light tracking-wider uppercase shadow-lg hover:shadow-xl"
-              >
-                Acceder
-              </button>
-            </div>
-          </>
-        )}
       </div>
 
       {event.event_host_names && (

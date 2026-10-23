@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import AsignacionPage from "./components/AsignacionPage";
 import AsignacionSearchPage from "./components/AsignacionSearchPage";
 import HomePage from "./components/HomePage";
-import InvitationPage from "./components/InvitationPage";
 
 function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
@@ -16,12 +15,13 @@ function App() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  const invitacionMatch = currentPath.match(/^\/invitacion\/(.+)$/);
+  const redirigirAInicio = /^\/invitacion\/(.+)$/.test(currentPath);
 
-  if (invitacionMatch) {
-    const codigo = invitacionMatch[1];
-    return <InvitationPage codigo={codigo} />;
-  }
+  useEffect(() => {
+    if (redirigirAInicio) window.location.replace("/");
+  }, [redirigirAInicio]);
+
+  if (redirigirAInicio) return null;
 
   const asignacionCodigoMatch = currentPath.match(/^\/asignacion\/(.+)$/);
 
